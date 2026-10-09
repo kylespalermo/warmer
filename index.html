@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        #wrapper {
+            width: 100vw;
+            height: 100vh;
+            background: salmon;
+        }
+
+        .target {
+            background: cyan;
+            opacity: 0;
+        }
+
+        .win {
+            opacity: 1;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="wrapper"></div>
+</body>
+<script async defer>
+    let wrapper;
+    //width + height of target
+    const targetSize = 100;
+    let lastCoords = null;
+
+    //x position of target, y position of target, dimension of game area, bounding box of game canvas
+    let target, targetX, targetY, dimensions, wrapperRect;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        wrapper = document.getElementById("wrapper");
+        //print coordinates of mouse, adjusted for wrapper positioning within document
+        wrapper.addEventListener("click", (e) => {
+            logMouseCoords(e.clientX - wrapperRect.left, e.clientY - wrapperRect.top);
+        });
+        dimensions = getWrapperDimensions();
+        wrapperRect = wrapper.getBoundingClientRect();
+        targetX = Math.floor(Math.random() * dimensions.w);
+        targetY = Math.floor(Math.random() * dimensions.h);
+        createTarget();
+    });
+
+    const getWrapperDimensions = () => {
+        return {
+            w: wrapper.offsetWidth,
+            h: wrapper.offsetHeight
+        };
+    }
+
+    window.addEventListener("resize", () => {
+        console.log(getWrapperDimensions());
+    });
+
+
+    const createTarget = () => {
+
+        target = document.createElement("div");
+        target.classList.add('target')
+
+        target.style.cssText = `
+            position: absolute;
+            width: ${targetSize}px;
+            height: ${targetSize}px;
+            left: ${targetX - targetSize/2}px;
+            top: ${targetY - targetSize/2}px;
+        `;
+
+        wrapper.appendChild(target);
+    };
+
+    const logMouseCoords = (mouseX, mouseY) => {
+        if (
+            mouseX > targetX - targetSize / 2 &&
+            mouseX < targetX + targetSize / 2 &&
+            mouseY > targetY - targetSize / 2 &&
+            mouseY < targetY + targetSize / 2
+        ) {
+            console.log("you win");
+            target.classList.add("win");
+        } else {
+            if (lastCoords != null) {
+                console.log(warmerOrColder(mouseX, mouseY));
+            } else {
+                console.log("Make a second guess")
+            }
+        }
+        lastCoords = [mouseX, mouseY];
+    }
+
+    
+    const warmerOrColder = (mouseX, mouseY) => {
+        let lastDist = Math.sqrt(Math.pow(lastCoords[0] - targetX, 2) + Math.pow(lastCoords[1] - targetY, 2));
+        let thisDist = Math.sqrt(Math.pow(mouseX - targetX, 2) + Math.pow(mouseY - targetY, 2));
+        
+        if (thisDist < lastDist) {
+            return "warmer"
+        } else {
+            return "colder"
+        }
+    }
+
+
+</script>
+
+</html>
